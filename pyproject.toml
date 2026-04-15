@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "datasets>=4.8.4",
+    "deepeval>=3.9.7",
+]
+
+[project.scripts]
+load-dataset = "download_dataset.load:load"
+run-embed = "embedder.embed:embed"
+
+[tool.setuptools.packages.find]
+where = ["src"]
