@@ -11,11 +11,15 @@ requires-python = ">=3.13"
 dependencies = [
     "datasets>=4.8.4",
     "deepeval>=3.9.7",
+    "langchain>=1.2.15",
+    "langchain-core>=1.2.29",
+    "langchain-text-splitters>=1.1.1",
+    "transformers>=5.5.4",
 ]
 
 [project.scripts]
-load-dataset = "download_dataset.load:load"
-run-embed = "embedder.embed:embed"
+load-dataset = "load:load"
+run-embed = "embed:embed"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -1,4 +1,4 @@
-from embedder.embed import embed
+from embed import embed
 def main():
     print("Hello from rag!")
 
