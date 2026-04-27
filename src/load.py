@@ -15,5 +15,22 @@ def load(path, name, split) -> list[Document]:
                 documents.append(doc)
     return documents
 
+
+def load_queries(path, name, split) -> list[dict]:
+    """Load questions with their gold documents and responses for evaluation.
+
+    Returns a list of dicts with keys: question, documents, response.
+    """
+    dataset = load_dataset(path=path, name=name, split=split)
+    queries = []
+    for row in dataset:
+        row_dict = cast(dict[str, Any], row)
+        queries.append({
+            "question": row_dict["question"],
+            "documents": row_dict["documents"],
+            "response": row_dict["response"],
+        })
+    return queries
+
 if __name__ == "__main__":
     dataset = load("rungalileo/ragbench", "techqa", "train")
