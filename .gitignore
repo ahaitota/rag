@@ -4,9 +4,10 @@ __pycache__/
 *$py.class
 
 chroma_db/
+datasets/
 # C extensions
 *.so
-
+.env
 # Distribution / packaging
 .Python
 build/
