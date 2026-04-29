@@ -1,6 +1,41 @@
+import os
+from pathlib import Path
 from typing import Any, cast
+
+import docx2txt
+from pypdf import PdfReader
 from datasets import load_dataset
 from langchain_core.documents import Document
+
+
+def _read_file(filepath: str) -> str:
+    ext = Path(filepath).suffix.lower()
+    if ext == ".docx":
+        return docx2txt.process(filepath)
+    if ext == ".pdf":
+        return "\n".join(page.extract_text() or "" for page in PdfReader(filepath).pages)
+    return Path(filepath).read_text(encoding="utf-8")
+
+
+def load_files(directory: str) -> list[Document]:
+    """Read all files in a directory and return them as langchain Documents."""
+    documents = []
+    for filename in sorted(os.listdir(directory)):
+        filepath = str(Path(directory) / filename)
+        if not os.path.isfile(filepath):
+            continue
+        try:
+            text = _read_file(filepath)
+        except Exception:
+            continue
+        if text and text.strip():
+            print(text)
+            documents.append(Document(
+                page_content=text,
+                metadata={"source": filepath, "filename": filename},
+            ))
+    return documents
+
     
 def load(path, name, split) -> list[Document]:
     ragbench_techqa = load_dataset(path=path, name=name, split=split)

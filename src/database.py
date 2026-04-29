@@ -5,18 +5,20 @@ from embed import get_embedder, embed
 
 
 def create_vectorstore(
-    small_chunks: list[Document],
+    chunks: list[Document],
     vectors: list[list[float]],
     persist_directory: str = "./chroma_db",
+    collection_name: str = "default",
     model_name: str = "microsoft/harrier-oss-v1-0.6b",
 ) -> Chroma:
     """Index small chunks into Chroma using pre-computed vectors."""
     embedder = get_embedder(model_name=model_name)
-    texts = [doc.page_content for doc in small_chunks]
-    metadatas = [doc.metadata if doc.metadata else None for doc in small_chunks]
-    ids = [str(i) for i in range(len(small_chunks))]
+    texts = [doc.page_content for doc in chunks]
+    metadatas = [doc.metadata if doc.metadata else None for doc in chunks]
+    ids = [str(i) for i in range(len(chunks))]
 
     vectorstore = Chroma(
+        collection_name=collection_name,
         embedding_function=embedder,
         persist_directory=persist_directory,
     )
@@ -35,11 +37,19 @@ def create_vectorstore(
 
 def retrieve_parent_chunks(
     query: str,
-    vectorstore: Chroma,
     big_chunks: list[Document],
     k: int = 5,
+    persist_directory: str = "./chroma_db",
+    collection_name: str = "default",
+    model_name: str = "microsoft/harrier-oss-v1-0.6b",
 ) -> list[Document]:
     """Search small chunks, return their parent big chunks."""
+    embedder = get_embedder(model_name=model_name)
+    vectorstore = Chroma(
+        collection_name=collection_name,
+        embedding_function=embedder,
+        persist_directory=persist_directory,
+    )
     results = vectorstore.similarity_search(query, k=k)
 
     parent_map = {b.metadata["parent_id"]: b for b in big_chunks}
