@@ -22,6 +22,7 @@ dependencies = [
     "langsmith>=0.7.31",
     "pypdf>=6.10.2",
     "python-docx>=1.2.0",
+    "pyyaml>=6.0.3",
     "sentence-transformers>=5.4.1",
     "streamlit>=1.57.0",
     "torch>=2.10.0",
