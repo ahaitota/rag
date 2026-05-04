@@ -19,7 +19,7 @@ def evaluate_retrieval(
     collection_name="applets",
     persist_directory="./chroma_db",
     model_name="microsoft/harrier-oss-v1-0.6b",
-    k=5,
+    k=3,
     threshold=0.3,
 ):
     embedder = get_embedder(model_name=model_name)
@@ -34,6 +34,7 @@ def evaluate_retrieval(
 
     recalls = []
     precisions = []
+    reciprocal_ranks = []
 
     for golden in goldens:
         query = golden["input"]
@@ -56,22 +57,36 @@ def evaluate_retrieval(
                 relevant_retrieved += 1
         precision = relevant_retrieved / len(retrieved_chunks) if retrieved_chunks else 0
 
+        reciprocal_rank = 0.0
+        for rank, ret in enumerate(retrieved_chunks, start=1):
+            if any(chunk_overlap(ret, gt_chunk, threshold) for gt_chunk in gt_contexts):
+                reciprocal_rank = 1.0 / rank
+                break
+
         recalls.append(recall)
         precisions.append(precision)
+        reciprocal_ranks.append(reciprocal_rank)
 
     mean_recall = np.mean(recalls)
     mean_precision = np.mean(precisions)
+    mean_reciprocal_rank = np.mean(reciprocal_ranks)
     f1 = 2 * mean_recall * mean_precision / (mean_recall + mean_precision + 1e-9)
 
     print(f"Recall@{k}:    {mean_recall:.3f} (std: {np.std(recalls):.3f})")
     print(f"Precision@{k}: {mean_precision:.3f} (std: {np.std(precisions):.3f})")
+    print(f"MRR@{k}:       {mean_reciprocal_rank:.3f} (std: {np.std(reciprocal_ranks):.3f})")
     print(f"F1@{k}:        {f1:.3f}")
     print(f"\nPer-query recall distribution:")
     print(f"  100% recall: {sum(1 for r in recalls if r == 1.0)} / {len(recalls)}")
     print(f"  >50% recall: {sum(1 for r in recalls if r > 0.5)} / {len(recalls)}")
     print(f"  0% recall:   {sum(1 for r in recalls if r == 0.0)} / {len(recalls)}")
 
-    return {"recall": mean_recall, "precision": mean_precision, "f1": f1}
+    return {
+        "recall": mean_recall,
+        "precision": mean_precision,
+        "mrr": mean_reciprocal_rank,
+        "f1": f1,
+    }
 
 
 if __name__ == "__main__":
